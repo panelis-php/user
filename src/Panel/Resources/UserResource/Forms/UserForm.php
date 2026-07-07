@@ -123,11 +123,11 @@ class UserForm
                         ->required(),
                 ]),
 
-            Section::make(__('user::user.role.label'))
+            Section::make(__('user::role.label'))
                 ->columnSpanFull()
                 ->schema([
                     CheckboxList::make('role_id')
-                        ->label(__('user::user.role.name'))
+                        ->label(__('user::role.name'))
                         ->relationship('roles', 'name')
                         ->disabled(function (?User $record): bool {
                             if (empty($record)) {
@@ -139,7 +139,7 @@ class UserForm
                         ->getOptionLabelFromRecordUsing(function (Role $role): string {
                             $label = $role->name;
                             if ($role->is_admin) {
-                                $label .= sprintf(' (%s)', __('user::user.role.admin_access'));
+                                $label .= sprintf(' (%s)', __('user::role.admin_access'));
                             }
 
                             return $label;

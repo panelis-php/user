@@ -14,14 +14,14 @@ class RoleForm
             Grid::make()
                 ->schema([
                     TextInput::make('name')
-                        ->label(__('user::user.role.name'))
+                        ->label(__('user::role.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->minLength(3)
                         ->maxLength(50),
 
                     TextInput::make('guard_name')
-                        ->label(__('user::user.role.guard_name'))
+                        ->label(__('user::role.guard_name'))
                         ->default('web')
                         ->datalist(['web', 'api'])
                         ->required()
@@ -29,7 +29,7 @@ class RoleForm
                 ]),
 
             Toggle::make('is_admin')
-                ->label(__('user::user.role.is_admin'))
+                ->label(__('user::role.is_admin'))
                 ->live(),
         ];
     }
