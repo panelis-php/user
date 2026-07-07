@@ -25,12 +25,12 @@ class PermissionResource extends Resource
 
     public static function getLabel(): ?string
     {
-        return __('user::user.permission.label');
+        return __('user::permission.label');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('user::user.permission.navigation');
+        return __('user::permission.navigation');
     }
 
     public static function getNavigationGroup(): ?string
@@ -54,7 +54,7 @@ class PermissionResource extends Resource
             ->columns(1)
             ->components([
                 TextInput::make('name')
-                    ->label(__('user::user.permission.name'))
+                    ->label(__('user::permission.name'))
                     ->disabledOn('edit')
                     ->required()
                     ->unique(ignorable: $schema->getRecord())
@@ -62,14 +62,14 @@ class PermissionResource extends Resource
                     ->maxLength(30),
 
                 TextInput::make('guard_name')
-                    ->label(__('user::user.permission.guard_name'))
+                    ->label(__('user::permission.guard_name'))
                     ->disabledOn('edit')
                     ->default('web')
                     ->datalist(['web', 'api'])
                     ->required(),
 
                 TextEntry::make('label')
-                    ->label(__('user::user.permission.name'))
+                    ->label(__('user::permission.name'))
                     ->visibleOn('edit')
                     ->state(fn (Permission $permission): string => $permission->label),
             ]);
@@ -80,7 +80,7 @@ class PermissionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('label')
-                    ->label(__('user::user.permission.name'))
+                    ->label(__('user::permission.name'))
                     ->searchable(['name', 'label', 'description'])
                     ->sortable()
                     ->description(fn (?Model $record): string => $record?->description ?? ''),

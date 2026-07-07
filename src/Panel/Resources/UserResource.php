@@ -79,7 +79,7 @@ class UserResource extends Resource
                     ->visible(fn (): bool => ! empty(Filament::getTenant())),
 
                 TextColumn::make('roles.name')
-                    ->label(__('user::user.role.label'))
+                    ->label(__('user::role.label'))
                     ->default('*'),
 
                 ImageColumn::make('avatar')
@@ -120,7 +120,7 @@ class UserResource extends Resource
                     ->relationship('branches', 'name'),
 
                 SelectFilter::make('role')
-                    ->label(__('user::user.role.label'))
+                    ->label(__('user::role.label'))
                     ->relationship('roles', 'name')
                     ->searchable()
                     ->preload()

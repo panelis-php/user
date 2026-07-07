@@ -27,7 +27,6 @@ class ManagePermissions extends ManageRecords
                     $key = Str::snake($data['name']);
 
                     $data['label'] = "user.permission.name_{$key}";
-                    $data['description'] = "user.permission.description_{$key}";
 
                     return $data;
                 }),
@@ -50,7 +49,7 @@ class ManagePermissions extends ManageRecords
                         BackupPermission::run();
 
                         Notification::make()
-                            ->title(__('user::user.permission.backed_up'))
+                            ->title(__('user::permission.backed_up'))
                             ->success()
                             ->send();
                     }),

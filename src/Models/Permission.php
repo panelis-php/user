@@ -13,7 +13,6 @@ use Panelis\User\Database\Factories\PermissionFactory;
  * @property string $name
  * @property string $guard_name
  * @property string $label
- * @property string $description
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
