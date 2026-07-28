@@ -17,8 +17,6 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Panelis\User\Models\Permission;
-use Panelis\User\Models\Role;
 use Panelis\User\Panel\Resources\RoleResource\Enums\RolePermission;
 use Panelis\User\Panel\Resources\RoleResource\Forms\RoleForm;
 use Panelis\User\Panel\Resources\RoleResource\Pages\CreateRole;
@@ -28,11 +26,14 @@ use Panelis\User\Panel\Resources\RoleResource\Pages\ViewRole;
 
 class RoleResource extends Resource
 {
-    protected static ?string $model = Role::class;
-
     protected static ?int $navigationSort = 2;
 
     protected static bool $isScopedToTenant = false;
+
+    public static function getModel(): string
+    {
+        return get_role_model();
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -79,7 +80,7 @@ class RoleResource extends Resource
                             ->options($permissions->pluck('label', 'id')->toArray())
                             ->bulkToggleable()
                             ->searchable()
-                            ->afterStateHydrated(function (CheckboxList $component, ?Role $record) use ($permissions): void {
+                            ->afterStateHydrated(function (CheckboxList $component, ?Model $record) use ($permissions): void {
                                 if (empty($record)) {
                                     return;
                                 }
@@ -91,7 +92,7 @@ class RoleResource extends Resource
 
                                 $component->state($selectedIds);
                             })
-                            ->saveRelationshipsUsing(function (Component $component, array $state, ?Role $record) use ($permissions): void {
+                            ->saveRelationshipsUsing(function (Component $component, array $state, ?Model $record) use ($permissions): void {
                                 if (empty($record)) {
                                     return;
                                 }
@@ -180,8 +181,8 @@ class RoleResource extends Resource
 
                 ActionGroup::make([
                     DeleteAction::make()
-                        ->disabled(function (Role $role): bool {
-                            return $role->users_count >= 1;
+                        ->disabled(function (Model $record): bool {
+                            return $record->users_count >= 1;
                         })
                         ->visible(user_can(RolePermission::Delete)),
                 ]),

@@ -6,7 +6,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Http\Response;
-use Panelis\User\Models\Role;
 use Panelis\User\Panel\Resources\RoleResource;
 use Panelis\User\Panel\Resources\RoleResource\Enums\RolePermission;
 
@@ -21,7 +20,7 @@ class EditRole extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        $role = Role::query()
+        $role = get_role_model()::query()
             ->withCount('users')
             ->where('id', $this->data['id'])
             ->first();

@@ -17,10 +17,10 @@ use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Panelis\User\Actions\SendResetPasswordLink;
-use Panelis\User\Models\User;
 use Panelis\User\Panel\Resources\UserResource\Enums\UserPermission;
 use Panelis\User\Panel\Resources\UserResource\Forms\UserForm;
 use Panelis\User\Panel\Resources\UserResource\Pages\CreateUser;
@@ -30,11 +30,14 @@ use Panelis\User\Panel\Resources\UserResource\Pages\ViewUser;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = User::class;
-
     protected static ?int $navigationSort = 3;
 
     protected static ?string $tenantOwnershipRelationshipName = 'branches';
+
+    public static function getModel(): string
+    {
+        return get_user_model();
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -84,7 +87,7 @@ class UserResource extends Resource
 
                 ImageColumn::make('avatar')
                     ->label(__('user::user.avatar'))
-                    ->defaultImageUrl(function (User $record): string {
+                    ->defaultImageUrl(function (Model $record): string {
                         $customAvatar = $record->getFilamentAvatarUrl();
                         if (empty($customAvatar)) {
                             return 'https://ui-avatars.com/api/?name='.urlencode($record->name);
@@ -134,11 +137,11 @@ class UserResource extends Resource
                         ->label(__('user::user.btn.send_reset_password_link'))
                         ->icon(Heroicon::OutlinedLockOpen)
                         ->visible(user_can(UserPermission::ResetPassword))
-                        ->disabled(fn (User $user): bool => Auth::id() === $user->id)
+                        ->disabled(fn (Model $record): bool => Auth::id() === $record->id)
                         ->requiresConfirmation()
-                        ->action(function (User $user): void {
+                        ->action(function (Model $record): void {
                             try {
-                                SendResetPasswordLink::run($user);
+                                SendResetPasswordLink::run($record);
 
                                 Notification::make()
                                     ->title(__('user::user.reset_password_link_sent'))
