@@ -2,9 +2,9 @@
 
 namespace Panelis\User\Actions;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Lorisleiva\Actions\Concerns\AsAction;
-use Panelis\User\Models\Permission as Model;
 use Panelis\User\Panel\Resources\PermissionResource\Enums\Permission;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +16,7 @@ class BackupPermission
     {
         abort_if(! user_can(Permission::Backup), Response::HTTP_FORBIDDEN);
 
-        $permissions = Model::query()
+        $permissions = get_permission_model()::query()
             ->get()
             ->mapWithKeys(function (Model $permission): array {
                 return [$permission->name => [

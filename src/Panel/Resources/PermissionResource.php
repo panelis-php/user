@@ -12,16 +12,18 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Panelis\User\Models\Permission;
 use Panelis\User\Panel\Resources\PermissionResource\Pages\ManagePermissions;
 
 class PermissionResource extends Resource
 {
-    protected static ?string $model = Permission::class;
-
     protected static ?int $navigationSort = 1;
 
     protected static bool $isScopedToTenant = false;
+
+    public static function getModel(): string
+    {
+        return get_permission_model();
+    }
 
     public static function getLabel(): ?string
     {
@@ -71,7 +73,7 @@ class PermissionResource extends Resource
                 TextEntry::make('label')
                     ->label(__('user::permission.name'))
                     ->visibleOn('edit')
-                    ->state(fn (Permission $permission): string => $permission->label),
+                    ->state(fn (Model $record): string => $record->label),
             ]);
     }
 

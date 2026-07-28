@@ -4,14 +4,14 @@ namespace Panelis\User\Actions;
 
 use Filament\Auth\Notifications\ResetPassword;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 use Lorisleiva\Actions\Concerns\AsAction;
-use Panelis\User\Models\User;
 
 class SendResetPasswordLink
 {
     use AsAction;
 
-    public function handle(User $user): void
+    public function handle(Model $user): void
     {
         $token = app('auth.password.broker')->createToken($user);
         $notification = new ResetPassword($token);

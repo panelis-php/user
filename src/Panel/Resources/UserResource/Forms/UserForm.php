@@ -20,8 +20,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Panelis\Branch\Models\Branch;
-use Panelis\User\Models\Role;
-use Panelis\User\Models\User;
 use Panelis\User\Panel\Resources\UserResource\Pages\CreateUser;
 
 class UserForm
@@ -129,22 +127,22 @@ class UserForm
                     CheckboxList::make('role_id')
                         ->label(__('user::role.name'))
                         ->relationship('roles', 'name')
-                        ->disabled(function (?User $record): bool {
+                        ->disabled(function (?Model $record): bool {
                             if (empty($record)) {
                                 return false;
                             }
 
                             return $record->getKey() === Auth::id() && Auth::user()->is_root;
                         })
-                        ->getOptionLabelFromRecordUsing(function (Role $role): string {
-                            $label = $role->name;
-                            if ($role->is_admin) {
+                        ->getOptionLabelFromRecordUsing(function (Model $record): string {
+                            $label = $record->name;
+                            if ($record->is_admin) {
                                 $label .= sprintf(' (%s)', __('user::role.admin_access'));
                             }
 
                             return $label;
                         })
-                        ->required(function (?User $record): bool {
+                        ->required(function (?Model $record): bool {
                             return empty($record) || ! ($record?->is_root ?? false);
                         }),
                 ]),

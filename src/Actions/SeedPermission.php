@@ -4,7 +4,6 @@ namespace Panelis\User\Actions;
 
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
-use Panelis\User\Models\Permission;
 use Throwable;
 
 class SeedPermission
@@ -19,7 +18,7 @@ class SeedPermission
         foreach (config('permission.enums') as $enum) {
             foreach ($enum::cases() as $case) {
                 $key = Str::snake($case->value);
-                Permission::query()
+                get_permission_model()::query()
                     ->updateOrCreate(['name' => $case->value], [
                         'guard_name' => 'web',
                         'label' => "user.permission.name_{$key}",
