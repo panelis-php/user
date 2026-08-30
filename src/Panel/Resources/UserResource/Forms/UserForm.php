@@ -5,8 +5,6 @@ namespace Panelis\User\Panel\Resources\UserResource\Forms;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
@@ -31,16 +29,7 @@ class UserForm
                 ->columnSpan(fn (?Model $record): int => empty($record) ? 3 : 2)
                 ->translateLabel()
                 ->schema([
-                    FileUpload::make('avatar')
-                        ->hiddenLabel()
-                        ->disk('public')
-                        ->directory('avatars')
-                        ->avatar()
-                        ->alignCenter()
-                        ->moveFiles()
-                        ->image(),
-
-                    Grid::make()
+                    Grid::make(1)
                         ->schema([
                             TextInput::make('name')
                                 ->label(__('user::user.name'))
@@ -147,23 +136,6 @@ class UserForm
                         }),
                 ]),
 
-            Section::make(__('user::user.profile'))
-                ->description(__('user::user.profile_section_description'))
-                ->collapsed()
-                ->relationship('profile')
-                ->columnSpanFull()
-                ->schema([
-                    TextInput::make('phone')
-                        ->label(__('user::user.phone'))
-                        ->tel()
-                        ->maxLength(20),
-
-                    Textarea::make('address')
-                        ->label(__('user::user.address'))
-                        ->rows(4)
-                        ->minLength(3)
-                        ->maxLength(150),
-                ]),
         ];
     }
 }
