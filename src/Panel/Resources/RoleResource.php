@@ -62,9 +62,11 @@ class RoleResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        $permissionForms = Permission::query()
+        $permissionModel = get_permission_model();
+
+        $permissionForms = $permissionModel::query()
             ->get()
-            ->groupBy(function (Permission $permission): string {
+            ->groupBy(function (Model $permission): string {
                 $labels = explode('_', $permission->getRawOriginal('label'));
 
                 return end($labels);
@@ -73,6 +75,7 @@ class RoleResource extends Resource
             ->map(function (Collection $permissions, string $groupLabel) {
                 return Section::make(__('user::permission.'.$groupLabel))
                     ->collapsible()
+                    ->columnSpanFull()
                     ->schema([
                         CheckboxList::make("permissions_{$groupLabel}")
                             ->columns(3)
@@ -123,11 +126,10 @@ class RoleResource extends Resource
             ->components([
                 Section::make(__('user::role.label'))
                     ->columnSpanFull()
+                    ->description(__('user::role.section_description'))
+                    ->columns(3)
                     ->schema([
-                        Section::make(__('user::role.label'))
-                            ->description(__('user::role.section_description'))
-                            ->columnSpan(fn (?Model $record): int => empty($record) ? 3 : 2)
-                            ->schema(RoleForm::schema()),
+                        ...RoleForm::schema(),
 
                         Section::make()
                             ->hiddenOn(CreateRole::class)
@@ -144,8 +146,7 @@ class RoleResource extends Resource
                                     ->since(),
                             ]),
 
-                        Section::make('Permission')
-                            ->schema($permissionForms),
+                        ...$permissionForms,
                     ]),
             ]);
     }

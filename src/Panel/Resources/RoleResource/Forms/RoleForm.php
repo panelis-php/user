@@ -5,6 +5,7 @@ namespace Panelis\User\Panel\Resources\RoleResource\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
+use Illuminate\Database\Eloquent\Model;
 
 class RoleForm
 {
@@ -12,6 +13,7 @@ class RoleForm
     {
         return [
             Grid::make()
+                ->columnSpan(fn (?Model $record): int => empty($record) ? 3 : 2)
                 ->schema([
                     TextInput::make('name')
                         ->label(__('user::role.name'))
