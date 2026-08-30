@@ -2,7 +2,10 @@
 
 namespace Panelis\User\Panel\Resources\UserResource\Enums;
 
-enum UserPermission: string
+use Filament\Support\Contracts\HasLabel;
+use Illuminate\Support\Str;
+
+enum UserPermission: string implements HasLabel
 {
     case Browse = 'BrowseUser';
 
@@ -15,4 +18,9 @@ enum UserPermission: string
     case Delete = 'DeleteUser';
 
     case ResetPassword = 'ResetPasswordUser';
+
+    public function getLabel(): string
+    {
+        return __(sprintf('user::permission.name_%s', Str::snake($this->value)));
+    }
 }

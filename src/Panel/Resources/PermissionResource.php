@@ -2,16 +2,16 @@
 
 namespace Panelis\User\Panel\Resources;
 
-use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Panelis\User\Panel\Resources\PermissionResource\Pages\ManagePermissions;
 
 class PermissionResource extends Resource
@@ -79,7 +79,33 @@ class PermissionResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $permissionGroups = collect(get_permission_definitions())
+            ->flatMap(fn (array $enums, string $group): array => collect($enums)
+                ->flatMap(fn (string $enum): array => enum_exists($enum)
+                    ? collect($enum::cases())->mapWithKeys(fn ($case): array => [$case->value => $group])->all()
+                    : [])
+                ->all())
+            ->all();
+
         return $table
+            ->modifyQueryUsing(function (Builder $query) use ($permissionGroups): void {
+                $column = $query->getModel()->qualifyColumn('name');
+                $cases = [];
+                $bindings = [];
+
+                foreach (collect($permissionGroups)->mapToGroups(fn (string $group, string $name): array => [$group => $name]) as $group => $names) {
+                    $cases[] = sprintf(
+                        'WHEN %s IN (%s) THEN ?',
+                        $column,
+                        $names->map(fn (): string => '?')->implode(', '),
+                    );
+                    $bindings = [...$bindings, ...$names->all(), $group];
+                }
+
+                $expression = $cases ? 'CASE '.implode(' ', $cases).' ELSE ? END' : '?';
+
+                $query->selectRaw("{$query->getModel()->getTable()}.*, {$expression} AS permission_group", [...$bindings, 'other']);
+            })
             ->columns([
                 TextColumn::make('label')
                     ->label(__('user::permission.name'))
@@ -87,20 +113,25 @@ class PermissionResource extends Resource
                     ->sortable()
                     ->description(fn (?Model $record): string => $record?->description ?? ''),
 
+                TextColumn::make('guard_name')
+                    ->label(__('user::permission.guard_name'))
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::makeSinceDate('updated_at', __('ui.updated_at')),
+
+                TextColumn::makeSinceDate('created_at', __('ui.created_at')),
             ])
+            ->groups([
+                Group::make('permission_group')
+                    ->label(__('user::permission.group'))
+                    ->getTitleFromRecordUsing(fn (Model $record): string => Str::headline($record->permission_group)),
+            ])
+            ->defaultGroup('permission_group')
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make()
-                    ->visible(user_can(PermissionResource\Enums\Permission::Edit)),
-
-                ActionGroup::make([
-                    DeleteAction::make()
-                        ->visible(user_can(PermissionResource\Enums\Permission::Delete)),
-                ]),
-            ])
+            ->recordActions([])
             ->toolbarActions([]);
     }
 

@@ -6,7 +6,6 @@ Manage application users directly from the Panelis admin panel.
 
 * User management
 * Create, update, and delete users
-* User profile management
 * Email verification status
 * Password management
 * Search and filtering
@@ -52,6 +51,69 @@ User information may include:
 * Email address
 * Password
 * Email verification status
+
+## Permission synchronization
+
+Permissions are defined by permission enums registered by each Panelis module. They are not created, edited, or deleted manually from the permission list.
+
+### Sync from the admin panel
+
+Open **Users > Permissions** in the Panelis admin panel and click **Sync permissions**. The sync creates or updates permissions from the registered enums and removes permissions that are no longer registered.
+
+### Sync from the command line
+
+Run:
+
+```bash
+php artisan panelis:sync-permissions
+```
+
+The application must have an available database connection before running the command.
+
+### Automatic sync after Composer update
+
+The main Panelis application registers the sync command in its `post-update-cmd` Composer hook:
+
+```json
+"post-update-cmd": [
+  "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+  "@php artisan panelis:sync-permissions"
+]
+```
+
+Therefore, running `composer update` from the main application repository automatically synchronizes permissions. This hook does not run when Composer is executed with `--no-scripts`.
+
+### Register permissions in a Panelis module
+
+Define permissions in a backed enum that implements Filament's `HasLabel` contract. The label should use the module's translation namespace:
+
+```php
+use Filament\Support\Contracts\HasLabel;
+
+enum Permission: string implements HasLabel
+{
+    case Browse = 'BrowseExample';
+
+    public function getLabel(): string
+    {
+        return __('example::permission.name_browse_example');
+    }
+}
+```
+
+Register the enum in the module's `composer.json` under `extra.panelis.permissions`:
+
+```json
+"extra": {
+  "panelis": {
+    "permissions": {
+      "example": "Panelis\\Example\\Panel\\Resources\\ExampleResource\\Enums\\Permission"
+    }
+  }
+}
+```
+
+Add the corresponding translation key in the module's language files, then run the sync command from the application repository.
 
 ## Integration
 

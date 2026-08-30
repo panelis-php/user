@@ -17,6 +17,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Panelis\User\Panel\Resources\RoleResource\Enums\RolePermission;
 use Panelis\User\Panel\Resources\RoleResource\Forms\RoleForm;
 use Panelis\User\Panel\Resources\RoleResource\Pages\CreateRole;
@@ -63,17 +64,29 @@ class RoleResource extends Resource
     public static function form(Schema $schema): Schema
     {
         $permissionModel = get_permission_model();
+        $permissionGroups = collect(get_permission_definitions())
+            ->flatMap(fn (array $enums, string $group): array => collect($enums)
+                ->flatMap(fn (string $enum): array => enum_exists($enum)
+                    ? collect($enum::cases())->mapWithKeys(fn ($case): array => [$case->value => $group])->all()
+                    : [])
+                ->all())
+            ->all();
 
         $permissionForms = $permissionModel::query()
             ->get()
-            ->groupBy(function (Model $permission): string {
-                $labels = explode('_', $permission->getRawOriginal('label'));
+            ->groupBy(function (Model $permission) use ($permissionGroups): string {
+                if (isset($permissionGroups[$permission->name])) {
+                    return $permissionGroups[$permission->name];
+                }
 
-                return end($labels);
+                return Str::of($permission->name)
+                    ->replaceMatches('/^(Browse|Read|Edit|Create|Delete|ResetPassword)/', '')
+                    ->replaceEnd('Permission', '')
+                    ->snake();
             })
             ->sortKeys()
             ->map(function (Collection $permissions, string $groupLabel) {
-                return Section::make(__('user::permission.'.$groupLabel))
+                return Section::make(Str::headline($groupLabel))
                     ->collapsible()
                     ->columnSpanFull()
                     ->schema([
@@ -125,29 +138,29 @@ class RoleResource extends Resource
             ->columns(3)
             ->components([
                 Section::make(__('user::role.label'))
-                    ->columnSpanFull()
+                    ->columnSpan(fn (?Model $record): int => empty($record) ? 3 : 2)
                     ->description(__('user::role.section_description'))
                     ->columns(3)
                     ->schema([
                         ...RoleForm::schema(),
-
-                        Section::make()
-                            ->hiddenOn(CreateRole::class)
-                            ->columnSpan(1)
-                            ->schema([
-                                TextEntry::make('created_at')
-                                    ->label(__('ui.created_at'))
-                                    ->dateTimeTooltip(get_datetime_format())
-                                    ->since(),
-
-                                TextEntry::make('updated_at')
-                                    ->label(__('ui.updated_at'))
-                                    ->dateTimeTooltip(get_datetime_format())
-                                    ->since(),
-                            ]),
-
                         ...$permissionForms,
                     ]),
+
+                Section::make()
+                    ->hiddenOn(CreateRole::class)
+                    ->columnSpan(1)
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label(__('ui.created_at'))
+                            ->dateTimeTooltip(get_datetime_format())
+                            ->since(),
+
+                        TextEntry::make('updated_at')
+                            ->label(__('ui.updated_at'))
+                            ->dateTimeTooltip(get_datetime_format())
+                            ->since(),
+                    ]),
+
             ]);
     }
 

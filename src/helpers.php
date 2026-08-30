@@ -50,3 +50,63 @@ if (! function_exists('get_permission_model')) {
         return config('user.models.permission', Permission::class);
     }
 }
+
+if (! function_exists('get_permission_definitions')) {
+    /**
+     * @return array<string, array<class-string<BackedEnum>>>
+     */
+    function get_permission_definitions(): array
+    {
+        $installedPath = base_path('vendor/composer/installed.json');
+        if (! is_file($installedPath)) {
+            $installedPath = __DIR__.'/../vendor/composer/installed.json';
+        }
+
+        if (! is_file($installedPath)) {
+            return [];
+        }
+
+        $installed = json_decode(file_get_contents($installedPath), true);
+        $packages = array_merge($installed['packages'] ?? [], $installed['packages-dev'] ?? []);
+
+        // The package itself is not listed in Composer's installed metadata
+        // when tests are run from this repository instead of as a dependency.
+        $packageComposerPath = __DIR__.'/../composer.json';
+        if (is_file($packageComposerPath)) {
+            $packageComposer = json_decode(file_get_contents($packageComposerPath), true);
+            $packages[] = $packageComposer + ['name' => 'panelis-php/user'];
+        }
+        $definitions = [];
+
+        foreach ($packages as $package) {
+            $packageComposerPath = base_path('vendor/'.$package['name'].'/composer.json');
+            if (! is_file($packageComposerPath) && $package['name'] === 'panelis-php/user') {
+                $packageComposerPath = __DIR__.'/../composer.json';
+            }
+            $packageComposer = is_file($packageComposerPath)
+                ? json_decode(file_get_contents($packageComposerPath), true)
+                : [];
+            $permissions = data_get($packageComposer, 'extra.panelis.permissions')
+                ?? data_get($package, 'extra.panelis.permissions', []);
+
+            if (array_is_list($permissions)) {
+                $group = str($package['name'] ?? '')->afterLast('/')->toString();
+
+                foreach ($permissions as $enum) {
+                    $definitions[$group ?: '_legacy'][] = $enum;
+                }
+
+                continue;
+            }
+
+            foreach ($permissions as $group => $enum) {
+                $definitions[$group][] = $enum;
+            }
+        }
+
+        return array_map(
+            fn (array $enums): array => array_values(array_unique($enums)),
+            $definitions,
+        );
+    }
+}

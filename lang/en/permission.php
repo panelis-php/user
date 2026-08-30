@@ -1,9 +1,26 @@
 <?php
 
 return [
-    'backed_up' => 'Backup successful',
     'label' => 'Permission',
     'navigation' => 'Permission',
+    'group' => 'Module',
     'name' => 'Name',
     'guard_name' => 'Guard name',
+    'sync' => 'Sync permissions',
+    'synced' => 'Permissions synchronized successfully',
+    'name_browse_user_permission' => 'Browse users',
+    'name_read_user_permission' => 'Read users',
+    'name_sync_permission' => 'Synchronize permissions',
+    'sync_summary' => 'Created: :created, updated: :updated, deleted: :deleted.',
+    'name_browse_user' => 'Browse users',
+    'name_read_user' => 'Read users',
+    'name_edit_user' => 'Edit users',
+    'name_create_user' => 'Create users',
+    'name_delete_user' => 'Delete users',
+    'name_reset_password_user' => 'Reset user passwords',
+    'name_browse_user_role' => 'Browse user roles',
+    'name_read_user_role' => 'Read user roles',
+    'name_edit_user_role' => 'Edit user roles',
+    'name_create_user_role' => 'Create user roles',
+    'name_delete_user_role' => 'Delete user roles',
 ];

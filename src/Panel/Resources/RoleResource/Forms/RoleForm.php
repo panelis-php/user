@@ -28,11 +28,11 @@ class RoleForm
                         ->datalist(['web', 'api'])
                         ->required()
                         ->alphaDash(),
-                ]),
 
-            Toggle::make('is_admin')
-                ->label(__('user::role.is_admin'))
-                ->live(),
+                    Toggle::make('is_admin')
+                        ->label(__('user::role.is_admin'))
+                        ->live(),
+                ]),
         ];
     }
 }

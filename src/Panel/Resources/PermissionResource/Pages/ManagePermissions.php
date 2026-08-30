@@ -3,14 +3,10 @@
 namespace Panelis\User\Panel\Resources\PermissionResource\Pages;
 
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Http\Response;
-use Illuminate\Support\Str;
-use Panelis\User\Actions\BackupPermission;
-use Panelis\User\Actions\SeedPermission;
+use Panelis\User\Actions\SyncPermission;
 use Panelis\User\Panel\Resources\PermissionResource;
 use Panelis\User\Panel\Resources\PermissionResource\Enums\Permission;
 
@@ -21,39 +17,20 @@ class ManagePermissions extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
-                ->visible(user_can(Permission::Create))
-                ->mutateDataUsing(function (array $data): array {
-                    $key = Str::snake($data['name']);
+            Action::make('sync_permission')
+                ->visible(user_can(Permission::Sync))
+                ->label(__('user::permission.sync'))
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $result = SyncPermission::run();
 
-                    $data['label'] = "user.permission.name_{$key}";
-
-                    return $data;
+                    Notification::make()
+                        ->title(__('user::permission.synced'))
+                        ->body(__('user::permission.sync_summary', $result))
+                        ->success()
+                        ->send();
                 }),
 
-            ActionGroup::make([
-                Action::make('generate_permission')
-                    ->visible(user_can(Permission::Create))
-                    ->label(__('ui.btn.generate'))
-                    ->requiresConfirmation()
-                    ->visible(user_can(Permission::Create))
-                    ->action(function (): void {
-                        SeedPermission::run();
-                    }),
-
-                Action::make('backup_permission')
-                    ->visible(user_can(Permission::Backup))
-                    ->label(__('ui.btn.backup'))
-                    ->requiresConfirmation()
-                    ->action(function (): void {
-                        BackupPermission::run();
-
-                        Notification::make()
-                            ->title(__('user::permission.backed_up'))
-                            ->success()
-                            ->send();
-                    }),
-            ]),
         ];
     }
 
