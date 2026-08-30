@@ -78,7 +78,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('branches.name')
-                    ->label(__('branch.label'))
+                    ->label(__('branch::branch.label'))
                     ->visible(fn (): bool => ! empty(Filament::getTenant())),
 
                 TextColumn::make('roles.name')
@@ -117,7 +117,8 @@ class UserResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('branch')
-                    ->label(__('branch.label'))
+                    ->label(__('branch::branch.label'))
+                    ->visible(config()->boolean('panelis.multitenant'))
                     ->preload()
                     ->multiple()
                     ->relationship('branches', 'name'),
