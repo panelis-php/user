@@ -1,9 +1,26 @@
 <?php
 
 return [
-    'backed_up' => 'Pencadangan berhasil',
     'label' => 'Hak Akses',
     'navigation' => 'Hak Akses',
+    'group' => 'Modul',
     'name' => 'Nama',
     'guard_name' => 'Nama guard',
+    'sync' => 'Sinkronkan hak akses',
+    'synced' => 'Hak akses berhasil disinkronkan',
+    'name_browse_user_permission' => 'Lihat daftar pengguna',
+    'name_read_user_permission' => 'Lihat pengguna',
+    'name_sync_permission' => 'Sinkronkan hak akses',
+    'sync_summary' => 'Dibuat: :created, diperbarui: :updated, dihapus: :deleted.',
+    'name_browse_user' => 'Lihat daftar pengguna',
+    'name_read_user' => 'Lihat pengguna',
+    'name_edit_user' => 'Edit pengguna',
+    'name_create_user' => 'Buat pengguna',
+    'name_delete_user' => 'Hapus pengguna',
+    'name_reset_password_user' => 'Atur ulang kata sandi pengguna',
+    'name_browse_user_role' => 'Lihat daftar peran pengguna',
+    'name_read_user_role' => 'Lihat peran pengguna',
+    'name_edit_user_role' => 'Edit peran pengguna',
+    'name_create_user_role' => 'Buat peran pengguna',
+    'name_delete_user_role' => 'Hapus peran pengguna',
 ];

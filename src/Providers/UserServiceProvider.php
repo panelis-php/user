@@ -3,6 +3,7 @@
 namespace Panelis\User\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Panelis\User\Commands\SyncPermissionsCommand;
 
 class UserServiceProvider extends ServiceProvider
 {
@@ -13,6 +14,12 @@ class UserServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../../lang', self::NAMESPACE);
 
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SyncPermissionsCommand::class,
+            ]);
+        }
 
         $this->publishes([
             __DIR__.'/../../config/user.php' => config_path('user.php'),
