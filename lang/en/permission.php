@@ -7,6 +7,8 @@ return [
     'name' => 'Name',
     'guard_name' => 'Guard name',
     'sync' => 'Sync permissions',
+    'search' => 'Search permissions',
+    'search_placeholder' => 'Search by permission name or group',
     'synced' => 'Permissions synchronized successfully',
     'name_browse_user_permission' => 'Browse users',
     'name_read_user_permission' => 'Read users',

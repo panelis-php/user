@@ -6,9 +6,11 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Components\Component;
 use Filament\Support\Enums\FontWeight;
@@ -86,50 +88,59 @@ class RoleResource extends Resource
             })
             ->sortKeys()
             ->map(function (Collection $permissions, string $groupLabel) {
-                return Section::make(Str::headline($groupLabel))
-                    ->collapsible()
+                $filterPermissions = function (Get $get) use ($permissions): Collection {
+                    $search = Str::lower((string) $get('permission_search'));
+
+                    if (blank($search)) {
+                        return $permissions;
+                    }
+
+                    return $permissions->filter(function (Model $permission) use ($search): bool {
+                        return Str::contains(Str::lower($permission->label), $search)
+                            || Str::contains(Str::lower($permission->name), $search);
+                    });
+                };
+
+                return CheckboxList::make("permissions_{$groupLabel}")
+                    ->label(Str::headline($groupLabel))
+                    ->columns(1)
                     ->columnSpanFull()
-                    ->schema([
-                        CheckboxList::make("permissions_{$groupLabel}")
-                            ->columns(3)
-                            ->hiddenLabel()
-                            ->options($permissions->pluck('label', 'id')->toArray())
-                            ->bulkToggleable()
-                            ->searchable()
-                            ->afterStateHydrated(function (CheckboxList $component, ?Model $record) use ($permissions): void {
-                                if (empty($record)) {
-                                    return;
-                                }
+                    ->options(fn (Get $get): array => $filterPermissions($get)->pluck('label', 'id')->toArray())
+                    ->bulkToggleable()
+                    ->visible(fn (Get $get): bool => (bool) $get('is_admin') && $filterPermissions($get)->isNotEmpty())
+                    ->afterStateHydrated(function (CheckboxList $component, ?Model $record) use ($permissions): void {
+                        if (empty($record)) {
+                            return;
+                        }
 
-                                $selectedIds = $record->permissions()
-                                    ->whereIn('id', $permissions->pluck('id'))
-                                    ->pluck('permissions.id')
-                                    ->toArray();
+                        $selectedIds = $record->permissions()
+                            ->whereIn('id', $permissions->pluck('id'))
+                            ->pluck('permissions.id')
+                            ->toArray();
 
-                                $component->state($selectedIds);
-                            })
-                            ->saveRelationshipsUsing(function (Component $component, array $state, ?Model $record) use ($permissions): void {
-                                if (empty($record)) {
-                                    return;
-                                }
+                        $component->state($selectedIds);
+                    })
+                    ->saveRelationshipsUsing(function (Component $component, array $state, ?Model $record) use ($permissions): void {
+                        if (empty($record)) {
+                            return;
+                        }
 
-                                $currentPermissions = $record->permissions()
-                                    ->whereIn('id', $permissions->pluck('id'))
-                                    ->pluck('id')
-                                    ->toArray();
+                        $currentPermissions = $record->permissions()
+                            ->whereIn('id', $permissions->pluck('id'))
+                            ->pluck('id')
+                            ->toArray();
 
-                                $toDetach = array_diff($currentPermissions, $state ?? []);
-                                $toAttach = array_diff($state ?? [], $currentPermissions);
+                        $toDetach = array_diff($currentPermissions, $state ?? []);
+                        $toAttach = array_diff($state ?? [], $currentPermissions);
 
-                                if (! empty($toDetach)) {
-                                    $record->permissions()->detach($toDetach);
-                                }
-                                if (! empty($toAttach)) {
-                                    $record->permissions()->attach($toAttach);
-                                }
-                            })
-                            ->dehydrated(false),
-                    ]);
+                        if (! empty($toDetach)) {
+                            $record->permissions()->detach($toDetach);
+                        }
+                        if (! empty($toAttach)) {
+                            $record->permissions()->attach($toAttach);
+                        }
+                    })
+                    ->dehydrated(false);
             })
             ->values()
             ->toArray();
@@ -143,6 +154,13 @@ class RoleResource extends Resource
                     ->columns(3)
                     ->schema([
                         ...RoleForm::schema(),
+                        TextInput::make('permission_search')
+                            ->label(__('user::permission.search'))
+                            ->placeholder(__('user::permission.search_placeholder'))
+                            ->live(debounce: 300)
+                            ->columnSpanFull()
+                            ->visible(fn (Get $get): bool => (bool) $get('is_admin'))
+                            ->dehydrated(false),
                         ...$permissionForms,
                     ]),
 

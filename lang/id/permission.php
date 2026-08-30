@@ -7,6 +7,8 @@ return [
     'name' => 'Nama',
     'guard_name' => 'Nama guard',
     'sync' => 'Sinkronkan hak akses',
+    'search' => 'Cari hak akses',
+    'search_placeholder' => 'Cari berdasarkan nama hak akses atau grup',
     'synced' => 'Hak akses berhasil disinkronkan',
     'name_browse_user_permission' => 'Lihat daftar pengguna',
     'name_read_user_permission' => 'Lihat pengguna',
