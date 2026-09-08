@@ -26,6 +26,8 @@ use Panelis\Branch\Models\Branch;
 use Panelis\Setting\Models\Setting;
 use Panelis\Setting\Panel\Clusters\Settings\Enums\AvatarProvider;
 use Panelis\User\Database\Factories\UserFactory;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -44,6 +46,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasTenant
 {
     use HasFactory, Notifiable;
     use HasRoles;
+    use LogsActivity;
     use SoftDeletes;
 
     protected $attributes = [
@@ -124,5 +127,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasTenant
     public function settings(): HasMany
     {
         return $this->hasMany(Setting::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('user')
+            ->logOnly(['name', 'email', 'email_verified_at'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return 'user::activity.'.$eventName;
     }
 }
