@@ -18,5 +18,11 @@ class SendResetPasswordLink
         $notification->url = Filament::getResetPasswordUrl($token, $user);
 
         $user->notify($notification);
+
+        audit('user')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->event('password_reset_link_sent')
+            ->log('user::activity.password_reset_link_sent');
     }
 }

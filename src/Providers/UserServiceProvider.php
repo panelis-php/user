@@ -2,6 +2,7 @@
 
 namespace Panelis\User\Providers;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 use Panelis\User\Commands\SyncPermissionsCommand;
 
@@ -11,6 +12,8 @@ class UserServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->syncActivityLoggingSetting();
+
         $this->loadTranslationsFrom(__DIR__.'/../../lang', self::NAMESPACE);
 
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
@@ -28,9 +31,22 @@ class UserServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        Relation::morphMap([
+            'user' => get_user_model(),
+        ], merge: false);
+
         $this->mergeConfigFrom(
             __DIR__.'/../../config/user.php',
             self::NAMESPACE,
         );
+    }
+
+    private function syncActivityLoggingSetting(): void
+    {
+        $settingClass = 'Panelis\\Setting\\Models\\Setting';
+
+        if (class_exists($settingClass) && config()->has('activitylog.enabled')) {
+            config()->set('activitylog.enabled', $settingClass::get('activity.enabled', config('activitylog.enabled')));
+        }
     }
 }

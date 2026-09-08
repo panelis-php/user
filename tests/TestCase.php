@@ -3,6 +3,7 @@
 namespace Panelis\User\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
+use Panelis\Activity\Providers\ActivityServiceProvider;
 use Panelis\User\Providers\UserServiceProvider;
 use Spatie\Permission\PermissionServiceProvider;
 
@@ -11,6 +12,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return [
+            ActivityServiceProvider::class,
             PermissionServiceProvider::class,
             UserServiceProvider::class,
         ];
@@ -27,5 +29,6 @@ abstract class TestCase extends Orchestra
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/migrations');
+        $this->loadMigrationsFrom(base_path('../activity/database/migrations'));
     }
 }
